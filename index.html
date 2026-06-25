@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Colour Scheme Generator 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500&family=Fira+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="shell">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="tool-header">
+    <h1>Colour scheme</h1>
+    <p>Build a complete UI colour system from 1–3 seed colours. Every colour shown doing real work — with code ready for web, mobile, and desktop platforms.</p>
+  </div>
+
+  <!-- ═══ INPUT CARD ═══ -->
+  <div class="card">
+
+    <div class="mode-bar">
+      <button class="mode-btn active" id="btn-explore" onclick="setMode('explore')">Explore — guided generation</button>
+      <button class="mode-btn" id="btn-build" onclick="setMode('build')">Build — anchor to my colours</button>
+    </div>
+
+    <!-- Mode description — updates with mode -->
+    <p class="mode-desc" id="mode-desc">
+      Enter one colour and the tool generates a complete harmonious palette around it. Try different harmony rules to explore variations.
+    </p>
+
+    <span class="cs-lbl" id="seed-lbl">Seed colour</span>
+
+    <!-- Seed inputs — all rendered inline as a flex row -->
+    <div class="seed-row" id="seed-row">
+
+      <div class="seed-grp" id="seed-grp-0">
+        <label class="seed-name">Primary</label>
+        <div class="seed-pair">
+          <input type="color" id="p0-picker" value="#008CBB" oninput="syncPicker(0)" />
+          <input type="text"  id="p0-text"   value="#008CBB" oninput="syncText(0)" maxlength="7" placeholder="#000000" />
+        </div>
+      </div>
+
+      <!-- seed-grp-1 and seed-grp-2 injected here by JS, inline in the row -->
+
+      <div class="seed-grp" id="add-wrap" style="display:none">
+        <label class="seed-name" style="opacity:0">a</label>
+        <button class="add-btn" onclick="addSeed()">+ Add colour</button>
+      </div>
+
+    </div><!-- /seed-row -->
+
+    <!-- Extreme seed warning — shown when seed is near-black or near-white -->
+    <div class="seed-warning" id="seed-warning" style="display:none">
+      <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+      <span id="seed-warning-text"></span>
+    </div>
+
+    <!-- Harmony rule -->
+    <div style="margin-top:1.25rem">
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
+        <span class="cs-lbl" style="margin-bottom:0">Harmony rule</span>
+        <span class="harmony-scope" id="harmony-scope"></span>
+      </div>
+      <div class="h-row">
+        <button class="h-pill active" id="h-natural"       onclick="setH('natural')">Natural — recommended</button>
+        <button class="h-pill" id="h-complementary"        onclick="setH('complementary')">Complementary</button>
+        <button class="h-pill" id="h-analogous"            onclick="setH('analogous')">Analogous</button>
+        <button class="h-pill" id="h-triadic"              onclick="setH('triadic')">Triadic</button>
+        <button class="h-pill" id="h-split"                onclick="setH('split')">Split-complementary</button>
+      </div>
+    </div>
+
+    <button class="gen-btn" onclick="generate()">Generate colour system</button>
+
+  </div><!-- /input card -->
+
+
+  <!-- ═══ RESULTS ═══ -->
+  <div class="results" id="results">
+
+    <!-- Colour system card -->
+    <div class="card gap">
+      <div class="pal-hdr">
+        <div>
+          <div class="pal-title" id="pal-title">Colour system</div>
+          <div class="pal-meta" id="pal-meta"></div>
+        </div>
+        <div id="seed-dots" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"></div>
+      </div>
+
+      <div class="theme-row">
+        <span class="cs-lbl" style="margin-bottom:0">Theme</span>
+        <div class="theme-tog">
+          <button class="theme-btn active" id="btn-light" onclick="setTheme('light')">Light</button>
+          <button class="theme-btn"        id="btn-dark"  onclick="setTheme('dark')">Dark</button>
+        </div>
+      </div>
+
+      <div class="dark-callout" id="dark-callout" style="display:none">
+        <i class="ti ti-info-circle" aria-hidden="true"></i>
+        <div>
+          <strong>Dark mode shifts the palette hierarchy.</strong>
+          Primary becomes a lighter tint — bright saturated colours are harsh on dark surfaces.
+          Backgrounds and surfaces invert to near-black. On-colours lighten to remain legible.
+          This is intentional design, not just "everything darker."
+        </div>
+      </div>
+
+      <span class="cs-lbl" style="margin-top:.75rem">Colour pairs — click any swatch for details</span>
+      <div class="cols-wrap" id="cols"></div>
+      <div class="sem-wrap" id="sem"></div>
+    </div>
+
+    <!-- Detail panel -->
+    <div class="card gap det-card" id="det" style="display:none">
+      <div class="det-top">
+        <div>
+          <div class="det-name" id="d-name"></div>
+          <div class="det-usage" id="d-usage"></div>
+        </div>
+        <div class="det-sw" id="d-sw"></div>
+      </div>
+      <div class="det-grid" id="d-grid"></div>
+    </div>
+
+    <!-- UI Preview card -->
+    <div class="card gap">
+      <div class="sec-title">UI preview</div>
+      <p class="sec-sub">Each colour owns a distinct region — primary for headers, accent for one focal element per screen, secondary for structure, surface for cards, background for page fill. Every text element uses its on-colour.</p>
+      <div class="prev-tabs">
+        <button class="prev-tab active" onclick="setPrev('mobile',this)">Mobile app</button>
+        <button class="prev-tab"        onclick="setPrev('web',this)">Webpage</button>
+      </div>
+      <div id="prev-area"></div>
+    </div>
+
+    <!-- Accessibility card -->
+    <div class="card gap">
+      <div class="sec-title">Accessibility report</div>
+      <div class="a11y-intro">
+        <p><strong>What is WCAG contrast?</strong> The Web Content Accessibility Guidelines define minimum contrast ratios so people with low vision or colour blindness can read your interface. <strong>AA (4.5:1)</strong> is the standard for normal-sized body text. <strong>AA Large (3:1)</strong> applies to large text (18px+ bold, 24px+ regular) and UI components like buttons and icons. <strong>AAA (7:1)</strong> is the enhanced level — aim for this in body copy wherever possible.</p>
+        <p style="margin-top:.5rem">Pairs marked <span class="inline-fail">Fail</span> need attention before your interface is considered accessible. Each failing pair includes a specific suggestion below.</p>
+      </div>
+      <div class="a11y-grid" id="a11y"></div>
+    </div>
+
+    <!-- Export card -->
+    <div class="card gap">
+      <div class="sec-title">Export</div>
+      <p class="sec-sub">Copy your colour tokens for use in code. All formats include both the colour and its on-colour for every role.</p>
+      <div class="exp-row">
+        <button class="exp-btn" onclick="doExport('css')"><i class="ti ti-code" aria-hidden="true"></i>CSS variables</button>
+        <button class="exp-btn" onclick="doExport('scss')"><i class="ti ti-code" aria-hidden="true"></i>SCSS variables</button>
+        <button class="exp-btn" onclick="doExport('tailwind')"><i class="ti ti-wind" aria-hidden="true"></i>Tailwind config</button>
+        <button class="exp-btn" onclick="doExport('json')"><i class="ti ti-braces" aria-hidden="true"></i>JSON tokens</button>
+        <button class="exp-btn" onclick="doExport('xaml')"><i class="ti ti-brand-windows" aria-hidden="true"></i>XAML (WPF / MAUI)</button>
+        <button class="exp-btn" onclick="doExport('swift')"><i class="ti ti-brand-apple" aria-hidden="true"></i>Swift (iOS / macOS)</button>
+        <button class="exp-btn" onclick="doExport('kotlin')"><i class="ti ti-brand-android" aria-hidden="true"></i>Kotlin (Android)</button>
+        <button class="exp-btn" onclick="doExport('java')"><i class="ti ti-coffee" aria-hidden="true"></i>Java (Android)</button>
+      </div>
+      <div class="exp-out" id="exp-out" style="display:none">
+        <button class="copy-btn" id="copy-btn" onclick="copyExp()">Copy</button>
+        <pre id="exp-text"></pre>
+      </div>
+    </div>
+
+  </div><!-- /results -->
+</div><!-- /shell -->
+<script src="script.js"></script>
+</body>
+</html>
